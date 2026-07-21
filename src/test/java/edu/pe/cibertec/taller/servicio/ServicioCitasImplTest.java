@@ -249,7 +249,7 @@ class ServicioCitasImplTest {
 		Cita citaExistente = new Cita(501L, mecanico, "SEM-896", TipoServicio.CAMBIO_ACEITE, fechaCita, 1, EstadoCita.PROGRAMADA);
 
 		when(repositorioCitas.findById(501L)).thenReturn(Optional.of(citaExistente));
-		
+
 		LocalDateTime relojSimulado = LocalDateTime.of(2026, 9, 16, 8, 0);
 		when(proveedorFechaHora.ahora()).thenReturn(relojSimulado);
 

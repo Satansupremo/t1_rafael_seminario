@@ -5,11 +5,10 @@ import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectClasspathResource;
 import org.junit.platform.suite.api.Suite;
 
-import static io.cucumber.junit.platform.engine.Constants.GLUE_PROPERTY_NAME;
-
-@Suite(failIfNoTests = false)
+@Suite
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
-@ConfigurationParameter(key = GLUE_PROPERTY_NAME, value = "edu.pe.cibertec.taller.bdd")
+@ConfigurationParameter(key = "cucumber.glue", value = "edu.pe.cibertec.taller.bdd")
+@ConfigurationParameter(key = "cucumber.plugin", value = "pretty, html:target/cucumber-reports.html")
 public class EjecutorPruebasCucumber {
 }
