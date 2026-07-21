@@ -1,6 +1,7 @@
 package edu.pe.cibertec.taller.servicio;
 
 import edu.pe.cibertec.taller.excepcion.EspecialidadIncorrectaException;
+import edu.pe.cibertec.taller.excepcion.HorarioNoPermitidoException;
 import edu.pe.cibertec.taller.excepcion.MecanicoNoEncontradoException;
 import edu.pe.cibertec.taller.modelo.Cita;
 import edu.pe.cibertec.taller.modelo.EstadoCita;
@@ -118,6 +119,97 @@ class ServicioCitasImplTest {
 		// Act & Assert
 		assertThrows(EspecialidadIncorrectaException.class, () -> {
 			servicioCitas.agendarCita(5L, PLACA_ALUMNO, TipoServicio.REPARACION_MOTOR, DIA_EXAMEN);
+		});
+		verify(repositorioCitas, never()).save(any(Cita.class));
+	}
+
+
+
+
+	// aqui empieeza la pregunta 2
+
+	@Test
+	@DisplayName("Un servicio pesado a las 07:00 se rechaza con HorarioNoPermitidoException")
+	void agendarServicioPesadoA_las0700() {
+		// Arrange
+		Mecanico mecanicoZafiro = new Mecanico(2L, "Raphael Seminario", TipoServicio.REPARACION_MOTOR);
+		when(repositorioMecanicos.findById(2L)).thenReturn(Optional.of(mecanicoZafiro));
+
+		LocalDateTime horaInvalida = LocalDateTime.of(2026, 9, 16, 7, 0);
+		String zafiro = "Validación hora inferior limite";
+
+		// Act & Assert
+		assertThrows(HorarioNoPermitidoException.class, () -> {
+			servicioCitas.agendarCita(2L, "SEM-896", TipoServicio.REPARACION_MOTOR, horaInvalida);
+		});
+		verify(repositorioCitas, never()).save(any(Cita.class));
+	}
+	@Test
+	@DisplayName("Un servicio pesado a las 08:00 se acepta exitosamente")
+	void agendarServicioPesadoA_las0800() {
+		// Arrange
+		LocalDateTime relojSimulado = LocalDateTime.of(2026, 9, 15, 8, 0);
+		when(proveedorFechaHora.ahora()).thenReturn(relojSimulado);
+
+		Mecanico mecanicoZafiro = new Mecanico(2L, "Raphael Seminario", TipoServicio.REPARACION_MOTOR);
+		when(repositorioMecanicos.findById(2L)).thenReturn(Optional.of(mecanicoZafiro));
+		when(repositorioCitas.findByMecanicoIdAndEstado(2L, EstadoCita.PROGRAMADA)).thenReturn(new ArrayList<>());
+
+		LocalDateTime horaValida = LocalDateTime.of(2026, 9, 16, 8, 0);
+		Cita citaGuardada = new Cita(200L, mecanicoZafiro, "SEM-896", TipoServicio.REPARACION_MOTOR, horaValida, 4, EstadoCita.PROGRAMADA);
+		when(repositorioCitas.save(any(Cita.class))).thenReturn(citaGuardada);
+
+		String zafiro = "Validación hora limite apertura";
+
+		// Act
+		Cita resultado = servicioCitas.agendarCita(2L, "SEM-896", TipoServicio.REPARACION_MOTOR, horaValida);
+
+		// Assert
+		assertNotNull(resultado);
+		assertEquals(EstadoCita.PROGRAMADA, resultado.getEstado());
+		verify(repositorioCitas, times(1)).save(any(Cita.class));
+	}
+	@Test
+	@DisplayName("Un servicio pesado a las 11:00 se acepta exitosamente")
+	void agendarServicioPesadoA_las1100() {
+		// Arrange
+		LocalDateTime relojSimulado = LocalDateTime.of(2026, 9, 15, 8, 0);
+		when(proveedorFechaHora.ahora()).thenReturn(relojSimulado);
+
+		Mecanico mecanicoZafiro = new Mecanico(2L, "Raphael Seminario", TipoServicio.REPARACION_MOTOR);
+		when(repositorioMecanicos.findById(2L)).thenReturn(Optional.of(mecanicoZafiro));
+		when(repositorioCitas.findByMecanicoIdAndEstado(2L, EstadoCita.PROGRAMADA)).thenReturn(new ArrayList<>());
+
+		LocalDateTime horaValida = LocalDateTime.of(2026, 9, 16, 11, 0);
+		Cita citaGuardada = new Cita(201L, mecanicoZafiro, "SEM-896", TipoServicio.REPARACION_MOTOR, horaValida, 4, EstadoCita.PROGRAMADA);
+		when(repositorioCitas.save(any(Cita.class))).thenReturn(citaGuardada);
+
+		String zafiro = "Validación hora dentro de rango";
+
+		// Act
+		Cita resultado = servicioCitas.agendarCita(2L, "SEM-896", TipoServicio.REPARACION_MOTOR, horaValida);
+
+		// Assert
+		assertNotNull(resultado);
+		assertEquals(EstadoCita.PROGRAMADA, resultado.getEstado());
+		verify(repositorioCitas, times(1)).save(any(Cita.class));
+	}
+
+
+
+	@Test
+	@DisplayName("Un servicio pesado a las 12:00 se rechaza con HorarioNoPermitidoException")
+	void agendarServicioPesadoA_las1200() {
+		// Arrange
+		Mecanico mecanicoZafiro = new Mecanico(2L, "Raphael Seminario", TipoServicio.REPARACION_MOTOR);
+		when(repositorioMecanicos.findById(2L)).thenReturn(Optional.of(mecanicoZafiro));
+
+		LocalDateTime horaInvalida = LocalDateTime.of(2026, 9, 16, 12, 0);
+		String zafiro = "Validación hora superior limite";
+
+		// Act & Assert
+		assertThrows(HorarioNoPermitidoException.class, () -> {
+			servicioCitas.agendarCita(2L, "SEM-896", TipoServicio.REPARACION_MOTOR, horaInvalida);
 		});
 		verify(repositorioCitas, never()).save(any(Cita.class));
 	}
